@@ -1,0 +1,104 @@
+<?php
+
+use yii\helpers\Html;
+use yii\widgets\DetailView;
+
+/** @var yii\web\View $this */
+/** @var app\models\Screening $model */
+/** @var app\controllers\ScreeningController $seatLayout */
+/** @var app\controllers\ScreeningController $soldCount */
+
+$this->title = $model->id;
+$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'Screenings'), 'url' => ['index']];
+$this->params['breadcrumbs'][] = $this->title;
+\yii\web\YiiAsset::register($this);
+?>
+<div class="screening-view">
+
+    <p>
+        <?= Html::a(Yii::t('app', 'Update'), ['update', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
+        <?= Html::a(Yii::t('app', 'Delete'), ['delete', 'id' => $model->id], [
+            'class' => 'btn btn-danger',
+            'data' => [
+                'confirm' => Yii::t('app', 'Are you sure you want to delete this item?'),
+                'method' => 'post',
+            ],
+        ]) ?>
+    </p>
+
+    <div class="screening-info">
+
+        <div class="screening-info-left">
+            <div><strong>Movie Title:</strong> <?= Html::encode($model->movie_title) ?></div>
+
+            <div>
+                <strong>Date:</strong>
+                <?= Yii::$app->formatter->asDate($model->screening_date) ?>
+            </div>
+
+            <div>
+                <strong>Start Time:</strong>
+                <?= Yii::$app->formatter->asTime($model->start_time) ?>
+            </div>
+
+            <div>
+                <strong>End Time:</strong>
+                <?= Yii::$app->formatter->asTime($model->end_time) ?>
+            </div>
+
+            <div>
+                <strong>Ticket Price:</strong>
+                <?= Yii::$app->formatter->asDecimal($model->ticket_price, 2) ?> €
+            </div>
+        </div>
+
+        <div class="screening-info-right">
+            <div><strong>Sold Tickets Count:</strong> <?= $soldCount ?> db</div>
+            <div><strong>Screening Income:</strong> <?= $soldCount * $model->ticket_price ?> €</div>
+        </div>
+
+    </div>
+
+<div class="seat-layout">
+    <h1> MOVIE THEATRE </h1>
+    <div class="seat-layout-grid">
+
+        <!-- Top-left empty corner -->
+        <div class="corner-cell"></div>
+
+        <!-- Column labels -->
+        <?php foreach (range('A', 'N') as $col): ?>
+            <div class="col-label"><?= $col ?></div>
+        <?php endforeach; ?>
+
+        <!-- Seat rows -->
+        <?php foreach ($seatLayout as $row => $seats): ?>
+
+            <!-- Row label -->
+            <div class="row-label"><?= $row ?></div>
+
+            <!-- Seats -->
+            <?php foreach (range('A', 'N') as $col): ?>
+                <?php
+                // find seat by column
+                $seat = $seats[$col] ?? null;
+
+                if ($seat === null) {
+                    // empty space where no seat exists
+                    echo '<div class="seat-empty"></div>';
+                } else {
+                    $seatNumber = $seat['number'];
+                    $isSold = isset($soldSeats[$seatNumber]);
+                    ?>
+                    <div class="seat <?= $isSold ? 'seat-sold' : 'seat-free' ?>"
+                         data-seat="<?= $seatNumber ?>">
+                        <?= $seatNumber ?>
+                    </div>
+                <?php } ?>
+            <?php endforeach; ?>
+
+        <?php endforeach; ?>
+    </div>
+</div>
+
+</div>
