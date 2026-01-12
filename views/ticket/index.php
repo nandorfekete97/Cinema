@@ -6,7 +6,6 @@ use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\grid\GridView;
 
-///** @var app\controllers\TicketController $dataProvider */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 /** @var app\models\ScreeningSearch $searchModel */
 

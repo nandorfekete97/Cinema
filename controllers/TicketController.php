@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\components\SeatLayout;
 use app\models\Screening;
 use app\models\ScreeningSearch;
 use app\models\Ticket;
@@ -80,6 +81,110 @@ class TicketController extends Controller
         ]);
     }
 
+    public function actionBuy($id)
+    {
+        $screening = Screening::findOne($id);
+
+        if (!$screening) {
+            throw new NotFoundHttpException('Screening not found.');
+        }
+
+        if (Yii::$app->request->isPost) {
+
+            $seatsRaw = Yii::$app->request->post('seats');
+            $buyerName  = Yii::$app->request->post('buyer_name');
+            $buyerPhone = Yii::$app->request->post('buyer_phone');
+            $buyerEmail = Yii::$app->request->post('buyer_email');
+
+            if (!$seatsRaw || !$buyerName || !$buyerPhone || !$buyerEmail) {
+                Yii::$app->session->setFlash('error', 'All fields are required.');
+                return $this->refresh();
+            }
+
+            $seatNumbers = explode(',', $seatsRaw);
+
+            if (count($seatNumbers) > 10) {
+                Yii::$app->session->setFlash('error', 'You can buy maximum 10 tickets.');
+                return $this->refresh();
+            }
+
+            $transaction = Yii::$app->db->beginTransaction();
+
+            try {
+                foreach ($seatNumbers as $seatNumber) {
+                    $exists = Ticket::find()
+                        ->where([
+                            'screening_id' => $screening->id,
+                            'seat_number' => $seatNumber,
+                        ])
+                        ->exists();
+
+                    if ($exists) {
+                        throw new \Exception("Seat {$seatNumber} is already sold.");
+                    }
+
+                    $seatData = $this->findSeatByNumber((int)$seatNumber);
+
+                    if (!$seatData) {
+                        throw new \Exception("Seat {$seatNumber} not found.");
+                    }
+
+                    $ticket = new Ticket();
+                    $ticket->screening_id = $screening->id;
+
+                    $ticket->seat_number = (int)$seatNumber;
+                    $ticket->seat_row = $seatData['row'];
+                    $ticket->seat_column = $seatData['column'];
+                    $ticket->seat_label = $seatData['label'];
+
+                    $ticket->buyer_name = $buyerName;
+                    $ticket->buyer_phone = $buyerPhone;
+                    $ticket->buyer_email = $buyerEmail;
+
+                    $ticket->created_at = time();
+                    $ticket->updated_at = time();
+
+                    if (!$ticket->save()) {
+                        throw new \Exception(json_encode($ticket->errors));
+                    }
+                }
+
+                $transaction->commit();
+
+                return $this->redirect([
+                    'ticket/index',
+                    'id' => $screening->id,
+                    'seats' => implode(',', $seatNumbers),
+                ]);
+
+            } catch (\Exception $e) {
+                $transaction->rollBack();
+                Yii::$app->session->setFlash('error', $e->getMessage());
+                return $this->refresh();
+            }
+        }
+
+        // GET request → show seat map
+        $seatLayout = SeatLayout::getSeatLayout();
+
+        $soldTickets = Ticket::find()
+            ->select(['seat_number'])
+            ->where(['screening_id' => $screening->id])
+            ->asArray()
+            ->all();
+
+        $soldSeats = [];
+        foreach ($soldTickets as $row) {
+            $soldSeats[$row['seat_number']] = true;
+        }
+
+        return $this->render('buy', [
+            'model' => $screening,
+            'seatLayout' => $seatLayout,
+            'soldSeats' => $soldSeats,
+        ]);
+    }
+
 
     /**
      * Creates a new Ticket model.
@@ -151,5 +256,24 @@ class TicketController extends Controller
         }
 
         throw new NotFoundHttpException(Yii::t('app', 'The requested page does not exist.'));
+    }
+
+    public function findSeatByNumber(int $seatNumber): ?array
+    {
+        $layout = SeatLayout::getSeatLayout();
+
+        foreach ($layout as $row => $cols) {
+            foreach ($cols as $col => $seat) {
+                if ($seat['number'] === $seatNumber) {
+                    return [
+                        'row' => $row,
+                        'column' => $col,
+                        'label' => $row . $col,
+                    ];
+                }
+            }
+        }
+
+        return null;
     }
 }

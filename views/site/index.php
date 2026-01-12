@@ -34,6 +34,14 @@ $this->title = 'Todays Screenings';
                     'start_time',
                     'end_time',
                     'ticket_price',
+                    [
+                            'label' => 'Tickets Sold',
+                            'filter' => false,
+                            'value' => function ($model) {
+                                $sold = $model->getTickets()->count();
+                                return $sold . ' / 40';
+                            },
+                    ],
             ],
     ]); ?>
 

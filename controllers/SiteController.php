@@ -64,12 +64,10 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        $today = date("Y-m-d");
-
         $now = new \DateTime();
-        $now->setTime((int)$now->format('H'), 0);
         $now->modify('+1 hour');
 
+        $today = $now->format("Y-m-d");
         $cutoffTime = $now->format('H:i:s');
 
         $dataProvider = new ActiveDataProvider([
