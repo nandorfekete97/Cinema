@@ -15,8 +15,12 @@ $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="screening-view">
 
+    <?php if (!$model->getTickets()->exists()): ?>
     <p>
-        <?= Html::a(Yii::t('app', 'Update'), ['update', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
+        <?= Html::a(Yii::t('app', 'Update'), ['update', 'id' => $model->id], [
+                'class' => 'btn btn-primary'
+            ])
+        ?>
         <?= Html::a(Yii::t('app', 'Delete'), ['delete', 'id' => $model->id], [
             'class' => 'btn btn-danger',
             'data' => [
@@ -25,6 +29,16 @@ $this->params['breadcrumbs'][] = $this->title;
             ],
         ]) ?>
     </p>
+
+    <?php else: ?>
+
+    <p>
+        <span class="text-muted">
+            This screening can no longer be modified because tickets have already been sold.
+        </span>
+    </p>
+
+    <?php endif; ?>
 
     <div class="screening-info">
 

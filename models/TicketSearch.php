@@ -11,14 +11,17 @@ use app\models\Ticket;
  */
 class TicketSearch extends Ticket
 {
+    public $movie_title;
+    public $screening_date;
+
     /**
      * {@inheritdoc}
      */
     public function rules()
     {
         return [
-            [['id', 'screening_id', 'seat_row', 'created_at', 'updated_at'], 'integer'],
-            [['seat_label', 'seat_column', 'buyer_name', 'buyer_phone', 'buyer_email'], 'safe'],
+            [['id', 'screening_id', 'seat_row', 'created_at', 'updated_at', 'seat_number'], 'integer'],
+            [['seat_label', 'seat_column', 'buyer_name', 'buyer_phone', 'buyer_email', 'movie_title', 'screening_date'], 'safe'],
         ];
     }
 
@@ -41,7 +44,7 @@ class TicketSearch extends Ticket
      */
     public function search($params, $formName = null)
     {
-        $query = Ticket::find();
+        $query = Ticket::find()->joinWith('screening');
 
         // add conditions that should always apply here
 
@@ -57,17 +60,9 @@ class TicketSearch extends Ticket
             return $dataProvider;
         }
 
-        // grid filtering conditions
-        $query->andFilterWhere([
-            'id' => $this->id,
-            'screening_id' => $this->screening_id,
-            'seat_row' => $this->seat_row,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
-        ]);
-
-        $query->andFilterWhere(['like', 'seat_label', $this->seat_label])
-            ->andFilterWhere(['like', 'seat_column', $this->seat_column])
+        $query->andFilterWhere(['like', 'screening.movie_title', $this->movie_title])
+            ->andFilterWhere(['=', 'screening.screening_date', $this->screening_date])
+            ->andFilterWhere(['=', 'ticket.seat_number', $this->seat_number])
             ->andFilterWhere(['like', 'buyer_name', $this->buyer_name])
             ->andFilterWhere(['like', 'buyer_phone', $this->buyer_phone])
             ->andFilterWhere(['like', 'buyer_email', $this->buyer_email]);

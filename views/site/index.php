@@ -30,10 +30,36 @@ $this->title = 'Todays Screenings';
                                 );
                             },
                     ],
-                    'screening_date',
-                    'start_time',
-                    'end_time',
-                    'ticket_price',
+
+                    [
+                            'attribute' => 'screening_date',
+                            'value' => function ($model) {
+                                return Yii::$app->formatter->asDate($model->screening_date);
+                            }
+                    ],
+
+                    [
+                            'attribute' => 'start_time',
+                            'filter' => false,
+                            'value' => function ($model) {
+                                return Yii::$app->formatter->asTime($model->start_time);
+                            },
+                    ],
+
+                    [
+                            'attribute' => 'end_time',
+                            'filter' => false,
+                            'value' => function ($model) {
+                                return Yii::$app->formatter->asTime($model->end_time);
+                            },
+                    ],
+                    [
+                            'attribute' => 'ticket_price',
+                            'filter' => false,
+                            'value' => function ($model) {
+                                return Yii::$app->formatter->asDecimal($model->ticket_price, 2) . ' €';
+                            },
+                    ],
                     [
                             'label' => 'Tickets Sold',
                             'filter' => false,

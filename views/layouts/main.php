@@ -39,18 +39,32 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
     echo Nav::widget([
         'options' => ['class' => 'navbar-nav'],
         'items' => [
-            ['label' => 'HomePage', 'url' => ['/site/index']],
-            ['label' => 'Screenings', 'url' => ['/screening/index']],
-                Yii::$app->user->isGuest
-                ? ['label' => 'Login', 'url' => ['/site/login']]
-                : '<li class="nav-item">'
-                    . Html::beginForm(['/site/logout'])
-                    . Html::submitButton(
-                        'Logout (' . Yii::$app->user->identity->username . ')',
-                        ['class' => 'nav-link btn btn-link logout']
-                    )
-                    . Html::endForm()
-                    . '</li>'
+            ['label' => 'Home', 'url' => ['/site/index']],
+            ['label' => 'Buy Tickets', 'url' => ['/ticket/available-screenings']],
+            ['label' => 'Screenings (Admin)', 'url' => ['/screening/index']],
+            ['label' => 'Tickets (Admin)', 'url' => ['/ticket/index']],
+            [
+                    'label' => 'Login',
+                    'url' => ['/site/login'],
+                    'visible' => Yii::$app->user->isGuest,
+            ],
+            [
+                    'label' => 'Logout',
+                    'url' => ['/site/logout'],
+                    'linkOptions' => ['data-method' => 'post'],
+                    'visible' => !Yii::$app->user->isGuest,
+            ],
+
+//                Yii::$app->user->isGuest
+//                ? ['label' => 'Login', 'url' => ['/site/login']]
+//                : '<li class="nav-item">'
+//                    . Html::beginForm(['/site/logout'])
+//                    . Html::submitButton(
+//                        'Logout (' . Yii::$app->user->identity->username . ')',
+//                        ['class' => 'nav-link btn btn-link logout']
+//                    )
+//                    . Html::endForm()
+//                    . '</li>'
         ]
     ]);
     NavBar::end();

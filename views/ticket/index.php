@@ -1,75 +1,100 @@
 <?php
 
-use app\models\Screening;
-use yii\data\ActiveDataProvider;
+use app\models\Ticket;
 use yii\helpers\Html;
-use yii\helpers\Url;
 use yii\grid\GridView;
 
+/** @var yii\web\View $this */
+/** @var app\models\TicketSearch $searchModel */
+/** @var app\models\Ticket $model */
 /** @var yii\data\ActiveDataProvider $dataProvider */
-/** @var app\models\ScreeningSearch $searchModel */
 
-$this->title = Yii::t('app', 'Available Screenings');
+$this->title = Yii::t('app', 'Tickets');
 $this->params['breadcrumbs'][] = $this->title;
-
 ?>
 
-<h1><?= Html::encode($this->title) ?></h1>
+<div class="ticket-index">
 
-<?= GridView::widget([
-        'dataProvider' => $dataProvider,
-        'filterModel' => $searchModel,
-        'columns' => [
-                [
-                        'attribute' => 'movie_title',
-                ],
-                [
-                        'attribute' => 'screening_date',
-                        'label' => 'Date',
-                        'value' => function ($model) {
-                            return Yii::$app->formatter->asDate($model->screening_date);
-                        },
-                        'filter' => \yii\jui\DatePicker::widget([
-                                'model' => $searchModel,
-                        'attribute' => 'screening_date',
-                        'dateFormat' => 'yyyy.MM.dd',
-                        'options' => [
-                                'class' => 'form-control',
-                                'autocomplete' => 'off',
-                        ],
-                    ]),
-                ],
-                [
-                        'label' => 'Start',
-                        'value' => function ($model) {
-                            return Yii::$app->formatter->asTime($model->start_time);
-                        },
-                ],
-                [
-                        'label' => 'Length',
-                        'value' => function ($model) {
-                            $start = strtotime($model->start_time);
-                            $end   = strtotime($model->end_time);
-                            $minutes = ($end - $start) / 60;
-                            return (int)$minutes . ' min';
-                        },
-                ],
-                [
-                        'label' => 'Price',
-                        'value' => function ($model) {
-                            return Yii::$app->formatter->asDecimal($model->ticket_price, 2) . ' €';
-                        },
-                ],
-                [
-                        'label' => '',
-                        'format' => 'raw',
-                        'value' => function ($model) {
-                            return Html::a(
-                                    'Buy Ticket',
-                                    ['ticket/buy', 'id' => $model->id],
-                                    ['class' => 'btn btn-primary btn-sm']
-                            );
-                        },
-                ],
-        ],
-]); ?>
+    <h1><?= Html::encode($this->title) ?></h1>
+
+    <?= GridView::widget([
+            'dataProvider' => $dataProvider,
+            'filterModel'  => $searchModel,
+            'columns' => [
+                    ['class' => 'yii\grid\SerialColumn'],
+
+                    [
+                            'label' => 'Movie Title',
+                            'attribute' => 'movie_title',
+                            'value' => function ($model) {
+                                return $model->screening->movie_title;
+                            }
+                    ],
+
+                    [
+                            'label' => 'Date',
+                            'attribute' => 'screening_date',
+                            'value' => function ($model) {
+                                return Yii::$app->formatter->asDate($model->screening->screening_date);
+                            },
+                            'filter' => \yii\jui\DatePicker::widget([
+                                    'model' => $searchModel,
+                                    'attribute' => 'screening_date',
+                                    'dateFormat' => 'yyyy.MM.dd',
+                                    'options' => [
+                                            'class' => 'form-control',
+                                            'autocomplete' => 'off',
+                                    ],
+                            ]),
+                    ],
+
+                    [
+                            'label' => 'Start',
+                            'attribute' => 'start_time',
+                            'filter' => false,
+                            'value' => function ($model) {
+                                return Yii::$app->formatter->asTime($model->screening->start_time);
+                            },
+                    ],
+
+                    [
+                            'label' => 'End',
+                            'attribute' => 'end_time',
+                            'filter' => false,
+                            'value' => function ($model) {
+                                return Yii::$app->formatter->asTime($model->screening->end_time);
+                            },
+                    ],
+
+                    [
+                            'label' => 'Price',
+                            'attribute' => 'ticket_price',
+                            'filter' => false,
+                            'value' => function ($model) {
+                                return Yii::$app->formatter->asDecimal($model->screening->ticket_price, 2) . ' €';
+                            },
+                    ],
+
+                    [
+                            'attribute' => 'seat_number',
+                            'filter' => false,
+                    ],
+
+                    [
+                            'attribute' => 'buyer_name',
+                            'filter' => false,
+                    ],
+
+                    [
+                            'attribute' => 'buyer_phone',
+                            'filter' => false,
+                    ],
+
+                    [
+                            'attribute' => 'buyer_email',
+                            'filter' => false,
+                    ],
+            ],
+    ]); ?>
+
+</div>

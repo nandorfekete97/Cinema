@@ -89,6 +89,15 @@ $this->params['breadcrumbs'][] = $this->title;
 
                     [
                             'class' => ActionColumn::class,
+                            'visibleButtons' => [
+                                    'update' => function ($model) {
+                                        return !$model->getTickets()->exists();
+                                    },
+                                    'delete' => function ($model) {
+                                        return !$model->getTickets()->exists();
+                                    },
+                                    'view' => true,
+                            ],
                             'urlCreator' => function ($action, Screening $model) {
                                 return Url::toRoute([$action, 'id' => $model->id]);
                             }

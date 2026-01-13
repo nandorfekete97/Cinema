@@ -51,6 +51,16 @@ class TicketController extends Controller
 
     public function actionIndex()
     {
+        $searchModel = new TicketSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+
+        return $this->render('index', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+
+    public function actionAvailableScreenings() {
         $searchModel = new ScreeningSearch();
 
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
@@ -75,13 +85,13 @@ class TicketController extends Controller
                 'start_time' => SORT_ASC,
             ]);
 
-        return $this->render('index', [
+        return $this->render('available-screenings', [
             'searchModel'  => $searchModel,
             'dataProvider' => $dataProvider,
         ]);
     }
 
-    public function actionBuy($id)
+    public function actionBuyTicket($id)
     {
         $screening = Screening::findOne($id);
 
@@ -152,7 +162,7 @@ class TicketController extends Controller
                 $transaction->commit();
 
                 return $this->redirect([
-                    'ticket/index',
+                    'ticket/available-screenings',
                     'id' => $screening->id,
                     'seats' => implode(',', $seatNumbers),
                 ]);
@@ -178,7 +188,7 @@ class TicketController extends Controller
             $soldSeats[$row['seat_number']] = true;
         }
 
-        return $this->render('buy', [
+        return $this->render('buy-ticket', [
             'model' => $screening,
             'seatLayout' => $seatLayout,
             'soldSeats' => $soldSeats,

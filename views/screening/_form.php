@@ -15,7 +15,7 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'movie_title')->textInput(['maxlength' => true]) ?>
 
-    <div class="row">
+    <div>
         <div class="col-md-3">
             <?= $form->field($model, 'screening_date')->widget(\yii\jui\DatePicker::class, [
                     'options' => ['readOnly' => true],
@@ -24,35 +24,38 @@ use yii\widgets\ActiveForm;
             ?>
         </div>
 
-        <div class="col-md-3">
-            <?= $form->field($model, 'start_time')->widget(TimePicker::class, [
-                    'pluginOptions' => [
-                            'showSeconds' => false,
-                            'showMeridian' => false,
-                            'minuteStep' => 15,
-                            'defaultTime' => "00:00",
-                    ],
-                    'options' => [
-                            'readonly' => true,
-                    ],
+        <div class="row">
+            <div class="col-md-3">
+                <?= $form->field($model, 'start_time')->widget(TimePicker::class, [
+                        'pluginOptions' => [
+                                'showSeconds' => false,
+                                'showMeridian' => false,
+                                'minuteStep' => 15,
+                                'defaultTime' => "00:00",
+                        ],
+                        'options' => [
+                                'readonly' => true,
+                        ],
                 ]);
-            ?>
+                ?>
+            </div>
+
+            <div class="col-md-3">
+                <?= $form->field($model, 'end_time')->widget(TimePicker::class, [
+                        'pluginOptions' => [
+                                'showSeconds' => false,
+                                'showMeridian' => false,
+                                'minuteStep' => 1,
+                                'defaultTime' => "00:00",
+                        ],
+                        'options' => [
+                                'readonly' => true,
+                        ],
+                ]);
+                ?>
+            </div>
         </div>
 
-        <div class="col-md-3">
-            <?= $form->field($model, 'end_time')->widget(TimePicker::class, [
-                    'pluginOptions' => [
-                            'showSeconds' => false,
-                            'showMeridian' => false,
-                            'minuteStep' => 1,
-                            'defaultTime' => "00:00",
-                    ],
-                    'options' => [
-                            'readonly' => true,
-                    ],
-                ]);
-            ?>
-        </div>
     </div>
 
     <?= $form->field($model, 'ticket_price')->textInput(['maxlength' => true]) ?>

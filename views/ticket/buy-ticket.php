@@ -9,25 +9,94 @@ use yii\widgets\ActiveForm;
 /** @var array $soldSeats */
 
 $this->title = 'Buy tickets – ' . $model->movie_title;
-$this->params['breadcrumbs'][] = ['label' => 'Home', 'url' => ['/ticket/index']];
+$this->params['breadcrumbs'][] = ['label' => 'Buy Tickets', 'url' => ['/ticket/index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 
 <h1><?= Html::encode($this->title) ?></h1>
 
-<p>
-    Date: <?= Yii::$app->formatter->asDate($model->screening_date) ?> |
-    Time: <?= Yii::$app->formatter->asTime($model->start_time) ?> |
-    Price: <?= Yii::$app->formatter->asDecimal($model->ticket_price, 2) ?> €
-</p>
-
 <?php $form = ActiveForm::begin([
-        'action' => ['ticket/buy', 'id' => $model->id],
+        'action' => ['ticket/buy-ticket', 'id' => $model->id],
         'method' => 'post',
 ]); ?>
 
 <!-- Hidden field that will contain selected seat numbers like: "12,15,18" -->
 <input type="hidden" name="seats" id="selected-seats">
+
+<hr>
+
+<div class="buy-info">
+
+    <div class="buy-info-left">
+        <h3>Buyer information</h3>
+
+        <div class="form-group">
+            <label>Name</label>
+            <input type="text" name="buyer_name" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label>Phone</label>
+            <input type="text" name="buyer_phone" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" name="buyer_email" class="form-control" required>
+        </div>
+    </div>
+
+    <div class="buy-info-right">
+        <h3>Payment summary</h3>
+
+        <div>
+            <strong>Movie Title:</strong>
+            <span id="movie-title"><?= $model->movie_title ?></span>
+        </div>
+
+        <div>
+            <strong>Screening Date:</strong>
+            <span id="screening-date"><?= Yii::$app->formatter->asDate($model->screening_date) ?></span>
+        </div>
+
+        <div>
+            <strong>Start Time:</strong>
+            <span id="start-time"><?= Yii::$app->formatter->asTime($model->start_time) ?></span>
+        </div>
+
+        <div>
+            <strong>End Time:</strong>
+            <span id="end-time"><?= Yii::$app->formatter->asTime($model->end_time) ?></span>
+        </div>
+
+        <div>
+            <strong>Ticket price:</strong>
+            <?= Yii::$app->formatter->asDecimal($model->ticket_price, 2) ?> €
+        </div>
+
+        <div>
+            <strong>Purchase Information:</strong>
+            <span>provide your customer credentials, then select your seat of preference.
+                After that click 'Buy Ticket(s)'.
+            </span>
+        </div>
+
+    </div>
+
+</div>
+
+<div class="payment-summary">
+    <div>
+        <strong>Number of tickets:</strong>
+        <span id="ticket-count">0</span>
+    </div>
+    <div>
+        <strong>Total to be paid:</strong>
+        <span id="total-price">0.00</span> €
+    </div>
+</div>
+
+<hr>
 
 <div class="seat-layout">
     <h2>MOVIE THEATRE</h2>
@@ -36,8 +105,6 @@ $this->params['breadcrumbs'][] = $this->title;
 
         <!-- Top-left corner cell -->
         <div class="corner-cell">
-            <div class="corner-col">COLUMN</div>
-            <div class="corner-row">ROW</div>
         </div>
 
         <!-- Column labels -->
@@ -79,31 +146,8 @@ $this->params['breadcrumbs'][] = $this->title;
     </div>
 </div>
 
-<hr>
-
-<div class="buyer-form">
-    <h3>Buyer information</h3>
-
-    <div class="form-group">
-        <label>Name</label>
-        <input type="text" name="buyer_name" class="form-control" required>
-    </div>
-
-    <div class="form-group">
-        <label>Phone</label>
-        <input type="text" name="buyer_phone" class="form-control" required>
-    </div>
-
-    <div class="form-group">
-        <label>Email</label>
-        <input type="email" name="buyer_email" class="form-control" required>
-    </div>
-</div>
-
-<hr>
-
 <div class="form-group">
-    <?= Html::submitButton('Buy Tickets', [
+    <?= Html::submitButton('Buy Ticket(s)', [
             'class' => 'btn btn-success',
             'id' => 'buy-button',
             'disabled' => true,
@@ -113,7 +157,9 @@ $this->params['breadcrumbs'][] = $this->title;
 <?php ActiveForm::end(); ?>
 
 <script>
+    // this js code should be separated into another file
     let selectedSeats = [];
+    const ticketPrice = <?= json_encode((float)$model->ticket_price) ?>;
 
     /*
      This function is called when a free seat is clicked.
@@ -141,5 +187,15 @@ $this->params['breadcrumbs'][] = $this->title;
 
         // Enable button only if at least one seat is selected
         document.getElementById('buy-button').disabled = selectedSeats.length === 0;
+
+        updatePaymentSummary();
+    }
+
+    function updatePaymentSummary() {
+        const count = selectedSeats.length;
+        const total = count * ticketPrice;
+
+        document.getElementById('ticket-count').innerText = count;
+        document.getElementById('total-price').innerText = total.toFixed(2);
     }
 </script>

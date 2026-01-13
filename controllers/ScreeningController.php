@@ -8,6 +8,7 @@ use app\models\ScreeningSearch;
 use app\models\Ticket;
 use Yii;
 use yii\web\Controller;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
@@ -128,6 +129,12 @@ class ScreeningController extends Controller
     {
         $model = $this->findModel($id);
 
+        if ($model->getTickets()->exists()) {
+            throw new ForbiddenHttpException(
+                'This screening cannot be modified because tickets have already been sold.'
+            );
+        }
+
         if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
             return $this->redirect(['view', 'id' => $model->id]);
         }
@@ -146,8 +153,15 @@ class ScreeningController extends Controller
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
+        $model = $this->findModel($id);
 
+        if ($model->getTickets()->exists()) {
+            throw new ForbiddenHttpException(
+                'This screening cannot be deleted because tickets have already been sold.'
+            );
+        }
+
+        $model->delete();
         return $this->redirect(['index']);
     }
 
