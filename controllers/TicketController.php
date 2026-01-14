@@ -9,6 +9,7 @@ use app\models\Ticket;
 use app\models\TicketSearch;
 use Yii;
 use yii\data\ActiveDataProvider;
+use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -32,6 +33,30 @@ class TicketController extends Controller
                         'delete' => ['POST'],
                     ],
                 ],
+                'access' => [
+                    'class' => AccessControl::class,
+                    'rules' => [
+
+                        // PUBLIC: anyone can browse screenings and buy tickets
+                        [
+                            'actions' => ['available-screenings', 'buy-ticket'],
+                            'allow'   => true,
+                            'roles'   => ['?'],   // guests
+                        ],
+                        [
+                            'actions' => ['available-screenings', 'buy-ticket'],
+                            'allow'   => true,
+                            'roles'   => ['@'],   // logged in users
+                        ],
+
+                        // ADMIN: ticket management (list, view, delete, etc.)
+                        [
+                            'actions' => ['index', 'view', 'delete', 'create', 'update'],
+                            'allow'   => true,
+                            'roles'   => ['@'],
+                        ],
+                    ],
+                ]
             ]
         );
     }

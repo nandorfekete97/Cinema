@@ -7,6 +7,7 @@ use app\models\Screening;
 use app\models\ScreeningSearch;
 use app\models\Ticket;
 use Yii;
+use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -31,6 +32,15 @@ class ScreeningController extends Controller
                         'delete' => ['POST'],
                     ],
                 ],
+                'access' => [
+                    'class' => AccessControl::class,
+                    'rules' => [
+                        [
+                            'allow'   => true,
+                            'roles'   => ['@'],   // logged in users
+                        ],
+                    ],
+                ]
             ]
         );
     }

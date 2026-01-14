@@ -77,22 +77,18 @@ $this->params['breadcrumbs'][] = $this->title;
 
                     [
                             'attribute' => 'seat_number',
-                            'filter' => false,
                     ],
 
                     [
                             'attribute' => 'buyer_name',
-                            'filter' => false,
                     ],
 
                     [
                             'attribute' => 'buyer_phone',
-                            'filter' => false,
                     ],
 
                     [
                             'attribute' => 'buyer_email',
-                            'filter' => false,
                     ],
             ],
     ]); ?>

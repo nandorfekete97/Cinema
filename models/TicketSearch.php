@@ -22,6 +22,7 @@ class TicketSearch extends Ticket
         return [
             [['id', 'screening_id', 'seat_row', 'created_at', 'updated_at', 'seat_number'], 'integer'],
             [['seat_label', 'seat_column', 'buyer_name', 'buyer_phone', 'buyer_email', 'movie_title', 'screening_date'], 'safe'],
+            [['movie_title', 'screening_date'], 'safe'],
         ];
     }
 
