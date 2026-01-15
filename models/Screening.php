@@ -45,6 +45,7 @@ class Screening extends \yii\db\ActiveRecord
 
             ['start_time', 'validateStartTimeWindow'],
             ['start_time', 'validateStartTimeToday'],
+            ['start_time', 'checkIfStartingMinuteIsRounded'],
             ['end_time', 'validateDuration'],
             [['start_time', 'end_time'], 'validateGapBetweenScreenings'],
 
@@ -262,5 +263,29 @@ class Screening extends \yii\db\ActiveRecord
                 'No screenings are allowed on the last Sunday of the month.'
             );
         }
+    }
+
+    public function checkIfStartingMinuteIsRounded($attribute) {
+        if (!$this->start_time) {
+            return;
+        }
+
+        $minute = date('i', strtotime($this->start_time));
+
+        $allowed = ['00', '15', '30', '45'];
+
+        if (!in_array($minute, $allowed, true)) {
+            $this->addError(
+                $attribute,
+                'Starting minute for screening must be 00, 15, 30 or 45.'
+            );
+        }
+    }
+
+    public static function getScreeningsForDate(string $date) {
+        return self::find()
+            ->where(['screening_date' => $date])
+            ->orderBy(['start_time' => SORT_ASC])
+            ->all();
     }
 }

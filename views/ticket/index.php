@@ -80,6 +80,14 @@ $this->params['breadcrumbs'][] = $this->title;
                     ],
 
                     [
+                            'attribute' => 'seat_row',
+                    ],
+
+                    [
+                            'attribute' => 'seat_column',
+                    ],
+
+                    [
                             'attribute' => 'buyer_name',
                     ],
 

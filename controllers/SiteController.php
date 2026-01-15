@@ -26,7 +26,7 @@ class SiteController extends Controller
                 'only' => ['logout', 'index'],
                 'rules' => [
                     [
-                        'actions' => ['index','logout'],
+                        'actions' => ['logout', 'index'],
                         'allow' => true,
                         'roles' => ['@'],
                     ],
@@ -65,7 +65,7 @@ class SiteController extends Controller
     public function actionIndex()
     {
         $now = new \DateTime();
-        $now->modify('+1 hour');
+        //$now->modify('+1 hour');
 
         $today = $now->format("Y-m-d");
         $cutoffTime = $now->format('H:i:s');

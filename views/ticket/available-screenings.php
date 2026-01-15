@@ -23,31 +23,24 @@ $this->params['breadcrumbs'][] = $this->title;
     'columns' => [
         [
             'attribute' => 'movie_title',
+            'filter' => false,
         ],
         [
             'attribute' => 'screening_date',
-            'label' => 'Date',
+            'label' => 'Screening Date',
             'value' => function ($model) {
                 return Yii::$app->formatter->asDate($model->screening_date);
             },
-            'filter' => DatePicker::widget([
-                'model' => $searchModel,
-                'attribute' => 'screening_date',
-                'dateFormat' => 'yyyy.MM.dd',
-                'options' => [
-                    'class' => 'form-control',
-                    'autocomplete' => 'off',
-                ],
-            ]),
+            'filter' => false
         ],
         [
-            'label' => 'Start',
+            'label' => 'Start Time',
             'value' => function ($model) {
                 return Yii::$app->formatter->asTime($model->start_time);
             },
         ],
         [
-            'label' => 'Length',
+            'label' => 'Movie Runtime',
             'value' => function ($model) {
                 $start = strtotime($model->start_time);
                 $end   = strtotime($model->end_time);
@@ -56,7 +49,7 @@ $this->params['breadcrumbs'][] = $this->title;
             },
         ],
         [
-            'label' => 'Price',
+            'label' => 'Ticket Price',
             'value' => function ($model) {
                 return Yii::$app->formatter->asDecimal($model->ticket_price, 2) . ' €';
             },

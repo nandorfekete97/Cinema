@@ -39,7 +39,7 @@ class TicketController extends Controller
 
                         // PUBLIC: anyone can browse screenings and buy tickets
                         [
-                            'actions' => ['available-screenings', 'buy-ticket'],
+                            'actions' => ['available-screenings', 'buy-ticket', 'thank-you'],
                             'allow'   => true,
                             'roles'   => ['?'],   // guests
                         ],
@@ -124,6 +124,11 @@ class TicketController extends Controller
             throw new NotFoundHttpException('Screening not found.');
         }
 
+        $result = $this->checkIfScreeningStartIsLessThenOneHour($screening);
+        if ($result !== null) {
+            return $result;
+        }
+
         if (Yii::$app->request->isPost) {
 
             $seatsRaw = Yii::$app->request->post('seats');
@@ -146,6 +151,8 @@ class TicketController extends Controller
             $transaction = Yii::$app->db->beginTransaction();
 
             try {
+                $now = time();
+
                 foreach ($seatNumbers as $seatNumber) {
                     $exists = Ticket::find()
                         ->where([
@@ -176,8 +183,8 @@ class TicketController extends Controller
                     $ticket->buyer_phone = $buyerPhone;
                     $ticket->buyer_email = $buyerEmail;
 
-                    $ticket->created_at = time();
-                    $ticket->updated_at = time();
+                    $ticket->created_at = $now;
+                    $ticket->updated_at = $now;
 
                     if (!$ticket->save()) {
                         throw new \Exception(json_encode($ticket->errors));
@@ -186,10 +193,19 @@ class TicketController extends Controller
 
                 $transaction->commit();
 
+                $ticketIds = Ticket::find()
+                    ->select('id')
+                    ->where(['screening_id' => $screening->id,
+                        'buyer_email' => $buyerEmail,
+                        'buyer_phone' => $buyerPhone,
+                        'created_at' => $now
+                    ])
+                    ->column();
+
                 return $this->redirect([
-                    'ticket/available-screenings',
-                    'id' => $screening->id,
-                    'seats' => implode(',', $seatNumbers),
+                    'thank-you',
+                    'screening_id' => $screening->id,
+                    'ticket_ids' => implode(',', $ticketIds),
                 ]);
 
             } catch (\Exception $e) {
@@ -220,6 +236,22 @@ class TicketController extends Controller
         ]);
     }
 
+    public function checkIfScreeningStartIsLessThenOneHour($screening) {
+        $now = time();
+        $screeningStartTimestamp = strtotime(
+            $screening->screening_date . ' ' . $screening->start_time
+        );
+
+        if ($screeningStartTimestamp - $now < 3600) {
+            Yii::$app->session->setFlash(
+                'error',
+                'You can only buy tickets at least 1 hour before the screening starts.'
+            );
+            return $this->redirect(['ticket/available-screenings']);
+        }
+
+        return null;
+    }
 
     /**
      * Creates a new Ticket model.
@@ -243,38 +275,16 @@ class TicketController extends Controller
         ]);
     }
 
-    /**
-     * Updates an existing Ticket model.
-     * If update is successful, the browser will be redirected to the 'view' page.
-     * @param int $id ID
-     * @return string|\yii\web\Response
-     * @throws NotFoundHttpException if the model cannot be found
-     */
-    public function actionUpdate($id)
-    {
-        $model = $this->findModel($id);
+    public function actionThankYou() {
+        $screeningId = Yii::$app->request->get('screening_id');
+        $ticketIdsRaw = Yii::$app->request->get('ticket_ids');
 
-        if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
-        }
+        $ticketIds = $ticketIdsRaw ? explode(',', $ticketIdsRaw) : [];
 
-        return $this->render('update', [
-            'model' => $model,
+        return $this->render('thank-you',[
+            'screeningId' => $screeningId,
+            'ticketIds' => $ticketIds,
         ]);
-    }
-
-    /**
-     * Deletes an existing Ticket model.
-     * If deletion is successful, the browser will be redirected to the 'index' page.
-     * @param int $id ID
-     * @return \yii\web\Response
-     * @throws NotFoundHttpException if the model cannot be found
-     */
-    public function actionDelete($id)
-    {
-        $this->findModel($id)->delete();
-
-        return $this->redirect(['index']);
     }
 
     /**

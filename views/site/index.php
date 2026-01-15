@@ -13,7 +13,7 @@ $this->title = 'Todays Screenings';
 
 <div class="site-index">
 
-    <h1> <?= \yii\helpers\Html::encode($this->title) ?> </h1>
+    <h1> <?= Html::encode($this->title) ?> </h1>
 
     <?= GridView::widget([
             'dataProvider' => $dataProvider,

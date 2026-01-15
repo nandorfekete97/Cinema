@@ -31,7 +31,7 @@ use yii\widgets\ActiveForm;
                                 'showSeconds' => false,
                                 'showMeridian' => false,
                                 'minuteStep' => 15,
-                                'defaultTime' => "00:00",
+                                'defaultTime' => "08:00",
                         ],
                         'options' => [
                                 'readonly' => true,
@@ -46,7 +46,7 @@ use yii\widgets\ActiveForm;
                                 'showSeconds' => false,
                                 'showMeridian' => false,
                                 'minuteStep' => 1,
-                                'defaultTime' => "00:00",
+                                'defaultTime' => "10:00",
                         ],
                         'options' => [
                                 'readonly' => true,

@@ -47,7 +47,7 @@ $this->params['breadcrumbs'][] = $this->title;
     </div>
 
     <div class="buy-info-right">
-        <h3>Payment summary</h3>
+        <h3>Screening information</h3>
 
         <div>
             <strong>Movie Title:</strong>
@@ -83,17 +83,6 @@ $this->params['breadcrumbs'][] = $this->title;
 
     </div>
 
-</div>
-
-<div class="payment-summary">
-    <div>
-        <strong>Number of tickets:</strong>
-        <span id="ticket-count">0</span>
-    </div>
-    <div>
-        <strong>Total to be paid:</strong>
-        <span id="total-price">0.00</span> €
-    </div>
 </div>
 
 <hr>
@@ -146,7 +135,18 @@ $this->params['breadcrumbs'][] = $this->title;
     </div>
 </div>
 
-<div class="form-group">
+<div class="screening-summary">
+    <div>
+        <strong>Number of tickets:</strong>
+        <span id="ticket-count">0</span>
+    </div>
+    <div>
+        <strong>Total to be paid:</strong>
+        <span id="total-price">0.00</span> €
+    </div>
+</div>
+
+<div class="form-group" id="buy-tickets-button">
     <?= Html::submitButton('Buy Ticket(s)', [
             'class' => 'btn btn-success',
             'id' => 'buy-button',

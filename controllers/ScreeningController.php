@@ -8,6 +8,7 @@ use app\models\ScreeningSearch;
 use app\models\Ticket;
 use Yii;
 use yii\filters\AccessControl;
+use yii\web\BadRequestHttpException;
 use yii\web\Controller;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -73,6 +74,8 @@ class ScreeningController extends Controller
 
         $seatLayout = SeatLayout::getSeatLayout();
 
+        $ticketsForScreening = $screening->getTickets()->all();
+
         $soldTicketSeatNumbers_ForScreening = Ticket::find()
             ->select(['seat_number'])
             ->where(['screening_id' => $screening->id])
@@ -96,6 +99,7 @@ class ScreeningController extends Controller
             'soldSeats'  => $soldSeats,
             'soldCount'  => $soldCount,
             'income'     => $income,
+            'ticketsForScreening' => $ticketsForScreening,
         ]);
     }
 
@@ -108,8 +112,14 @@ class ScreeningController extends Controller
     public function actionCreate()
     {
         $model = new Screening();
+        $screeningsForDate = [];
 
         if ($model->load($this->request->post())) {
+
+            if ($model->screening_date) {
+                $screeningsForDate = Screening::getScreeningsForDate($model->screening_date);
+            }
+
             if ($model->save()) {
                 return $this->redirect(['view', 'id' => $model->id]);
             }
@@ -125,6 +135,7 @@ class ScreeningController extends Controller
 
         return $this->render('create', [
             'model' => $model,
+            'screeningsForDate' => $screeningsForDate,
         ]);
     }
 
@@ -139,11 +150,9 @@ class ScreeningController extends Controller
     {
         $model = $this->findModel($id);
 
-        if ($model->getTickets()->exists()) {
-            throw new ForbiddenHttpException(
-                'This screening cannot be modified because tickets have already been sold.'
-            );
-        }
+        $screeningsForDate = Screening::getScreeningsForDate($model->screening_date);
+
+        $this->checkIfScreeningHasTickets($model);
 
         if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
             return $this->redirect(['view', 'id' => $model->id]);
@@ -151,6 +160,7 @@ class ScreeningController extends Controller
 
         return $this->render('update', [
             'model' => $model,
+            'screeningsForDate' => $screeningsForDate,
         ]);
     }
 
@@ -165,11 +175,7 @@ class ScreeningController extends Controller
     {
         $model = $this->findModel($id);
 
-        if ($model->getTickets()->exists()) {
-            throw new ForbiddenHttpException(
-                'This screening cannot be deleted because tickets have already been sold.'
-            );
-        }
+        $this->checkIfScreeningHasTickets($model);
 
         $model->delete();
         return $this->redirect(['index']);
@@ -189,5 +195,15 @@ class ScreeningController extends Controller
         }
 
         throw new NotFoundHttpException(Yii::t('app', 'The requested page does not exist.'));
+    }
+
+    private function checkIfScreeningHasTickets(Screening $model) {
+        if ($model->getTickets()->exists()) {
+            throw new BadRequestHttpException(
+                Yii::t(
+                'app', 'This screening cannot be modified because tickets have already been sold.'
+                )
+            );
+        }
     }
 }

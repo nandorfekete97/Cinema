@@ -7,6 +7,7 @@ use yii\widgets\DetailView;
 /** @var app\models\Screening $model */
 /** @var app\controllers\ScreeningController $seatLayout */
 /** @var app\controllers\ScreeningController $soldCount */
+/** @var app\models\Ticket[] $ticketsForScreening */
 
 $this->title = $model->id;
 $this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'Screenings'), 'url' => ['index']];
@@ -115,4 +116,18 @@ $this->params['breadcrumbs'][] = $this->title;
     </div>
 </div>
 
+<div class="tickets-for-screening">
+    <h3>Tickets for this screening</h3>
+
+    <?php if (empty($ticketsForScreening)): ?>
+        <p>No tickets sold yet.</p>
+    <?php else: ?>
+        <?php foreach ($ticketsForScreening as $ticket): ?>
+            <div class="ticket-for-screening">
+                Seat: <?=$ticket->seat_number ?> |
+                Buyer: <?= Html::encode($ticket->buyer_name) ?> |
+                Phone: <?= Html::encode($ticket->buyer_phone) ?>
+            </div>
+        <?php endforeach;?>
+    <?php endif; ?>
 </div>
