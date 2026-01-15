@@ -134,10 +134,6 @@ class Screening extends \yii\db\ActiveRecord
                 $attribute,
                 "The earliest possible screening start time today is {$earliestAllowed}."
             );
-            // with the current state of this method, the return statement is REDUNDANT
-            // (being the last executable statement in the method, PHP implicitly returns anyway)
-            // HOWEVER: as defensive clarity, the 'return' can stay, because if code is added below
-            // the logic remains safe
             return;
         }
     }
@@ -235,28 +231,20 @@ class Screening extends \yii\db\ActiveRecord
             return;
         }
 
-        // screening_date is in string format, so we need to convert to DateTime object (for calendar math)
         $date = new \DateTime($this->screening_date);
 
-        // format 'N' returns the integer of the datetime objects day number
         if ((int)$date->format('N') !== 7) {
-            // Not a Sunday → rule does not apply
             return;
         }
 
-        // Clone date so we don't mutate original
         $lastDayOfMonth = clone $date;
 
-        // PHP's datetime::modify() uses natural language date parser
-        // modify('last day of this month') changes the DateTime object's day to the last calendar day of the month
         $lastDayOfMonth->modify('last day of this month');
 
-        // iterate backwards until we hit a Sunday
         while ((int)$lastDayOfMonth->format('N') !== 7) {
             $lastDayOfMonth->modify('-1 day');
         }
 
-        // Compare dates (Y-m-d only)
         if ($date->format('Y-m-d') === $lastDayOfMonth->format('Y-m-d')) {
             $this->addError(
                 $attribute,

@@ -21,6 +21,7 @@ $this->params['breadcrumbs'][] = $this->title;
 ]); ?>
 
 <!-- Hidden field that will contain selected seat numbers like: "12,15,18" -->
+<!--what is this for?-->
 <input type="hidden" name="seats" id="selected-seats">
 
 <hr>
@@ -92,29 +93,22 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <div class="seat-layout-grid">
 
-        <!-- Top-left corner cell -->
         <div class="corner-cell">
         </div>
 
-        <!-- Column labels -->
         <?php foreach (range('A', 'N') as $col): ?>
             <div class="col-label"><?= $col ?></div>
         <?php endforeach; ?>
 
-        <!-- Seat rows -->
         <?php foreach ($seatLayout as $row => $seats): ?>
 
-            <!-- Row label -->
             <div class="row-label"><?= $row ?></div>
 
-            <!-- Seats -->
             <?php foreach (range('A', 'N') as $col): ?>
                 <?php
-                // Check if a seat exists at this row/column
                 $seat = $seats[$col] ?? null;
 
                 if ($seat === null) {
-                    // No seat here, just a placeholder to keep grid alignment
                     echo '<div class="seat-empty"></div>';
                 } else {
                     $seatNumber = $seat['number'];
@@ -157,23 +151,16 @@ $this->params['breadcrumbs'][] = $this->title;
 <?php ActiveForm::end(); ?>
 
 <script>
-    // this js code should be separated into another file
     let selectedSeats = [];
     const ticketPrice = <?= json_encode((float)$model->ticket_price) ?>;
 
-    /*
-     This function is called when a free seat is clicked.
-     It toggles selection on/off and keeps the hidden input updated.
-    */
     function toggleSeat(el) {
         const seatNumber = el.dataset.seat;
 
         if (el.classList.contains('seat-selected')) {
-            // Unselect
             el.classList.remove('seat-selected');
             selectedSeats = selectedSeats.filter(s => s !== seatNumber);
         } else {
-            // Select
             if (selectedSeats.length >= 10) {
                 alert('You can select a maximum of 10 seats.');
                 return;
@@ -182,10 +169,8 @@ $this->params['breadcrumbs'][] = $this->title;
             selectedSeats.push(seatNumber);
         }
 
-        // Update hidden input value
         document.getElementById('selected-seats').value = selectedSeats.join(',');
 
-        // Enable button only if at least one seat is selected
         document.getElementById('buy-button').disabled = selectedSeats.length === 0;
 
         updatePaymentSummary();

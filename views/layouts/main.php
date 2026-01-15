@@ -50,12 +50,12 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                     'visible' => Yii::$app->user->isGuest,
             ],
             [
-                    'label' => 'Screenings (Admin)',
+                    'label' => 'Screenings',
                     'url' => ['/screening/index'],
                     'visible' => !Yii::$app->user->isGuest
             ],
             [
-                    'label' => 'Tickets (Admin)',
+                    'label' => 'Tickets',
                     'url' => ['/ticket/index'],
                     'visible' => !Yii::$app->user->isGuest
             ],

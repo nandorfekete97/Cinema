@@ -68,7 +68,7 @@ $this->params['breadcrumbs'][] = $this->title;
         </div>
 
         <div class="screening-info-right">
-            <div><strong>Sold Tickets Count:</strong> <?= $soldCount ?> db</div>
+            <div><strong>Sold Tickets Count:</strong> <?= $soldCount ?> </div>
             <div><strong>Screening Income:</strong> <?= $soldCount * $model->ticket_price ?> €</div>
         </div>
 
@@ -78,28 +78,21 @@ $this->params['breadcrumbs'][] = $this->title;
     <h1> MOVIE THEATRE </h1>
     <div class="seat-layout-grid">
 
-        <!-- Top-left empty corner -->
         <div class="corner-cell"></div>
 
-        <!-- Column labels -->
         <?php foreach (range('A', 'N') as $col): ?>
             <div class="col-label"><?= $col ?></div>
         <?php endforeach; ?>
 
-        <!-- Seat rows -->
         <?php foreach ($seatLayout as $row => $seats): ?>
 
-            <!-- Row label -->
             <div class="row-label"><?= $row ?></div>
 
-            <!-- Seats -->
             <?php foreach (range('A', 'N') as $col): ?>
                 <?php
-                // find seat by column
                 $seat = $seats[$col] ?? null;
 
                 if ($seat === null) {
-                    // empty space where no seat exists
                     echo '<div class="seat-empty"></div>';
                 } else {
                     $seatNumber = $seat['number'];

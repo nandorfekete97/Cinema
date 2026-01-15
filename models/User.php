@@ -13,8 +13,6 @@ class User extends ActiveRecord implements IdentityInterface
         return '{{%user}}';
     }
 
-    /* IdentityInterface */
-
     public static function findIdentity($id)
     {
         return static::findOne($id);
@@ -44,8 +42,6 @@ class User extends ActiveRecord implements IdentityInterface
     {
         return $this->auth_key === $authKey;
     }
-
-    /* Password handling */
 
     public function validatePassword($password)
     {

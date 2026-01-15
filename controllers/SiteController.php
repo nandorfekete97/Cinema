@@ -65,7 +65,6 @@ class SiteController extends Controller
     public function actionIndex()
     {
         $now = new \DateTime();
-        //$now->modify('+1 hour');
 
         $today = $now->format("Y-m-d");
         $cutoffTime = $now->format('H:i:s');

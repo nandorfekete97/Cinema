@@ -5,6 +5,7 @@ use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\grid\ActionColumn;
 use yii\grid\GridView;
+use yii\jui\DatePicker;
 
 /** @var yii\web\View $this */
 /** @var app\models\ScreeningSearch $searchModel */
@@ -19,6 +20,12 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <p>
         <?= Html::a(Yii::t('app', 'Create Screening'), ['create'], ['class' => 'btn btn-success']) ?>
+    </p>
+
+    <p>
+        <?= Html::a('Reset filters', ['index'], [
+                'class' => 'btn btn-outline-secondary',
+        ]) ?>
     </p>
 
     <?= GridView::widget([
@@ -43,7 +50,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             'value' => function ($model) {
                                 return Yii::$app->formatter->asDate($model->screening_date);
                             },
-                            'filter' => \yii\jui\DatePicker::widget([
+                            'filter' => DatePicker::widget([
                                     'model' => $searchModel,
                                     'attribute' => 'screening_date',
                                     'dateFormat' => 'yyyy-MM-dd',

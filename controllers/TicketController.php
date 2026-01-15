@@ -36,20 +36,13 @@ class TicketController extends Controller
                 'access' => [
                     'class' => AccessControl::class,
                     'rules' => [
-
-                        // PUBLIC: anyone can browse screenings and buy tickets
+                        // browsing screenings, buying tickets allowed for guests
                         [
                             'actions' => ['available-screenings', 'buy-ticket', 'thank-you'],
                             'allow'   => true,
-                            'roles'   => ['?'],   // guests
+                            'roles'   => ['?'],
                         ],
-                        [
-                            'actions' => ['available-screenings', 'buy-ticket'],
-                            'allow'   => true,
-                            'roles'   => ['@'],   // logged in users
-                        ],
-
-                        // ADMIN: ticket management (list, view, delete, etc.)
+                        // ticket management for admins
                         [
                             'actions' => ['index', 'view', 'delete', 'create', 'update'],
                             'allow'   => true,
@@ -90,7 +83,6 @@ class TicketController extends Controller
 
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
-        // Apply the "buyable screenings" constraint on top
         $now = new \DateTime();
         $today = $now->format('Y-m-d');
         $oneHourLater = (clone $now)->modify('+1 hour')->format('H:i:s');
@@ -118,121 +110,155 @@ class TicketController extends Controller
 
     public function actionBuyTicket($id)
     {
+        $screening = $this->findScreening($id);
+
+        if ($result = $this->checkIfScreeningStartIsLessThenOneHour($screening)) {
+            return $result;
+        }
+
+        if (!Yii::$app->request->isPost) {
+            return $this->renderBuyForm($screening);
+        }
+
+        $data = $this->getPurchaseFormData();
+        if ($data === null) {
+            return $this->refresh();
+        }
+
+        try {
+            $ticketIds = $this->processTicketPurchase($screening, $data);
+
+            return $this->redirect([
+                'thank-you',
+                'screening_id' => $screening->id,
+                'ticket_ids'   => implode(',', $ticketIds),
+            ]);
+        } catch (\Exception $e) {
+            Yii::$app->session->setFlash('error', $e->getMessage());
+            return $this->refresh();
+        }
+    }
+
+    private function findScreening($id): Screening
+    {
         $screening = Screening::findOne($id);
 
         if (!$screening) {
             throw new NotFoundHttpException('Screening not found.');
         }
 
-        $result = $this->checkIfScreeningStartIsLessThenOneHour($screening);
-        if ($result !== null) {
-            return $result;
+        return $screening;
+    }
+
+    private function getPurchaseFormData(): ?array
+    {
+        $seatsRaw    = Yii::$app->request->post('seats');
+        $buyerName   = Yii::$app->request->post('buyer_name');
+        $buyerPhone  = Yii::$app->request->post('buyer_phone');
+        $buyerEmail  = Yii::$app->request->post('buyer_email');
+
+        if (!$seatsRaw || !$buyerName || !$buyerPhone || !$buyerEmail) {
+            Yii::$app->session->setFlash('error', 'All fields are required.');
+            return null;
         }
 
-        if (Yii::$app->request->isPost) {
+        $seatNumbers = explode(',', $seatsRaw);
 
-            $seatsRaw = Yii::$app->request->post('seats');
-            $buyerName  = Yii::$app->request->post('buyer_name');
-            $buyerPhone = Yii::$app->request->post('buyer_phone');
-            $buyerEmail = Yii::$app->request->post('buyer_email');
+        if (count($seatNumbers) > 10) {
+            Yii::$app->session->setFlash('error', 'You can buy maximum 10 tickets.');
+            return null;
+        }
 
-            if (!$seatsRaw || !$buyerName || !$buyerPhone || !$buyerEmail) {
-                Yii::$app->session->setFlash('error', 'All fields are required.');
-                return $this->refresh();
+        return [
+            'seats'       => $seatNumbers,
+            'buyer_name'  => $buyerName,
+            'buyer_phone' => $buyerPhone,
+            'buyer_email' => $buyerEmail,
+        ];
+    }
+
+    private function processTicketPurchase(Screening $screening, array $data): array
+    {
+        $transaction = Yii::$app->db->beginTransaction();
+        $now = time();
+
+        try {
+            foreach ($data['seats'] as $seatNumber) {
+                $this->createSingleTicket($screening, (int)$seatNumber, $data, $now);
             }
 
-            $seatNumbers = explode(',', $seatsRaw);
+            $transaction->commit();
 
-            if (count($seatNumbers) > 10) {
-                Yii::$app->session->setFlash('error', 'You can buy maximum 10 tickets.');
-                return $this->refresh();
-            }
-
-            $transaction = Yii::$app->db->beginTransaction();
-
-            try {
-                $now = time();
-
-                foreach ($seatNumbers as $seatNumber) {
-                    $exists = Ticket::find()
-                        ->where([
-                            'screening_id' => $screening->id,
-                            'seat_number' => $seatNumber,
-                        ])
-                        ->exists();
-
-                    if ($exists) {
-                        throw new \Exception("Seat {$seatNumber} is already sold.");
-                    }
-
-                    $seatData = $this->findSeatByNumber((int)$seatNumber);
-
-                    if (!$seatData) {
-                        throw new \Exception("Seat {$seatNumber} not found.");
-                    }
-
-                    $ticket = new Ticket();
-                    $ticket->screening_id = $screening->id;
-
-                    $ticket->seat_number = (int)$seatNumber;
-                    $ticket->seat_row = $seatData['row'];
-                    $ticket->seat_column = $seatData['column'];
-                    $ticket->seat_label = $seatData['label'];
-
-                    $ticket->buyer_name = $buyerName;
-                    $ticket->buyer_phone = $buyerPhone;
-                    $ticket->buyer_email = $buyerEmail;
-
-                    $ticket->created_at = $now;
-                    $ticket->updated_at = $now;
-
-                    if (!$ticket->save()) {
-                        throw new \Exception(json_encode($ticket->errors));
-                    }
-                }
-
-                $transaction->commit();
-
-                $ticketIds = Ticket::find()
-                    ->select('id')
-                    ->where(['screening_id' => $screening->id,
-                        'buyer_email' => $buyerEmail,
-                        'buyer_phone' => $buyerPhone,
-                        'created_at' => $now
-                    ])
-                    ->column();
-
-                return $this->redirect([
-                    'thank-you',
+            return Ticket::find()
+                ->select('id')
+                ->where([
                     'screening_id' => $screening->id,
-                    'ticket_ids' => implode(',', $ticketIds),
-                ]);
+                    'buyer_email'  => $data['buyer_email'],
+                    'buyer_phone'  => $data['buyer_phone'],
+                    'created_at'   => $now,
+                ])
+                ->column();
 
-            } catch (\Exception $e) {
-                $transaction->rollBack();
-                Yii::$app->session->setFlash('error', $e->getMessage());
-                return $this->refresh();
-            }
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            throw $e;
+        }
+    }
+
+    private function createSingleTicket(Screening $screening, int $seatNumber, array $data, int $now): void
+    {
+        if ($this->isSeatAlreadySold($screening->id, $seatNumber)) {
+            throw new \Exception("Seat {$seatNumber} is already sold.");
         }
 
-        // GET request → show seat map
+        $seatData = $this->findSeatByNumber($seatNumber);
+        if (!$seatData) {
+            throw new \Exception("Seat {$seatNumber} not found.");
+        }
+
+        $ticket = new Ticket();
+        $ticket->screening_id = $screening->id;
+        $ticket->seat_number = $seatNumber;
+        $ticket->seat_row    = $seatData['row'];
+        $ticket->seat_column = $seatData['column'];
+        $ticket->seat_label  = $seatData['label'];
+
+        $ticket->buyer_name  = $data['buyer_name'];
+        $ticket->buyer_phone = $data['buyer_phone'];
+        $ticket->buyer_email = $data['buyer_email'];
+
+        $ticket->created_at = $now;
+        $ticket->updated_at = $now;
+
+        if (!$ticket->save()) {
+            throw new \Exception(json_encode($ticket->errors));
+        }
+    }
+
+    private function isSeatAlreadySold(int $screeningId, int $seatNumber): bool
+    {
+        return Ticket::find()
+            ->where([
+                'screening_id' => $screeningId,
+                'seat_number'  => $seatNumber,
+            ])
+            ->exists();
+    }
+
+    private function renderBuyForm(Screening $screening)
+    {
         $seatLayout = SeatLayout::getSeatLayout();
 
-        $soldTickets = Ticket::find()
+        $soldSeats = Ticket::find()
             ->select(['seat_number'])
             ->where(['screening_id' => $screening->id])
-            ->asArray()
-            ->all();
-
-        $soldSeats = [];
-        foreach ($soldTickets as $row) {
-            $soldSeats[$row['seat_number']] = true;
-        }
+            ->indexBy('seat_number')
+            ->column();
 
         return $this->render('buy-ticket', [
-            'model' => $screening,
+            'model'      => $screening,
             'seatLayout' => $seatLayout,
-            'soldSeats' => $soldSeats,
+            'soldSeats'  => array_fill_keys($soldSeats, true),
         ]);
     }
 

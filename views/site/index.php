@@ -19,7 +19,6 @@ $this->title = 'Todays Screenings';
             'dataProvider' => $dataProvider,
             'columns' => [
                     ['class' => 'yii\grid\SerialColumn'],
-                    'id',
                     [
                             'attribute' => 'movie_title',
                             'format' => 'raw',

@@ -2,6 +2,7 @@
 
 use kartik\time\TimePicker;
 use yii\helpers\Html;
+use yii\jui\DatePicker;
 use yii\widgets\ActiveForm;
 
 /** @var yii\web\View $this */
@@ -17,7 +18,7 @@ use yii\widgets\ActiveForm;
 
     <div>
         <div class="col-md-3">
-            <?= $form->field($model, 'screening_date')->widget(\yii\jui\DatePicker::class, [
+            <?= $form->field($model, 'screening_date')->widget(DatePicker::class, [
                     'options' => ['readOnly' => true],
                     'dateFormat' => 'yyyy-MM-dd'
                 ]);
@@ -32,6 +33,8 @@ use yii\widgets\ActiveForm;
                                 'showMeridian' => false,
                                 'minuteStep' => 15,
                                 'defaultTime' => "08:00",
+                                'minTime' => "08:00",
+                                'maxTime' => "20:00",
                         ],
                         'options' => [
                                 'readonly' => true,

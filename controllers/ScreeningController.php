@@ -10,7 +10,6 @@ use Yii;
 use yii\filters\AccessControl;
 use yii\web\BadRequestHttpException;
 use yii\web\Controller;
-use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
@@ -28,7 +27,7 @@ class ScreeningController extends Controller
             parent::behaviors(),
             [
                 'verbs' => [
-                    'class' => VerbFilter::className(),
+                    'class' => VerbFilter::class,
                     'actions' => [
                         'delete' => ['POST'],
                     ],
@@ -82,8 +81,6 @@ class ScreeningController extends Controller
             ->asArray()
             ->all();
 
-        // Instead of [12, 17, 35] we get [12 => true, 17 => true, 35 => true] which results in faster lookup (about which seat is sold)
-        //
         $soldSeats = [];
         foreach ($soldTicketSeatNumbers_ForScreening as $ticket) {
             $soldSeats[$ticket['seat_number']] = true;

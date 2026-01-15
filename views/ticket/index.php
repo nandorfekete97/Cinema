@@ -3,6 +3,7 @@
 use app\models\Ticket;
 use yii\helpers\Html;
 use yii\grid\GridView;
+use yii\jui\DatePicker;
 
 /** @var yii\web\View $this */
 /** @var app\models\TicketSearch $searchModel */
@@ -16,6 +17,12 @@ $this->params['breadcrumbs'][] = $this->title;
 <div class="ticket-index">
 
     <h1><?= Html::encode($this->title) ?></h1>
+
+    <p>
+        <?= Html::a('Reset filters', ['index'], [
+                'class' => 'btn btn-outline-secondary',
+        ]) ?>
+    </p>
 
     <?= GridView::widget([
             'dataProvider' => $dataProvider,
@@ -37,7 +44,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             'value' => function ($model) {
                                 return Yii::$app->formatter->asDate($model->screening->screening_date);
                             },
-                            'filter' => \yii\jui\DatePicker::widget([
+                            'filter' => DatePicker::widget([
                                     'model' => $searchModel,
                                     'attribute' => 'screening_date',
                                     'dateFormat' => 'yyyy.MM.dd',
@@ -81,10 +88,12 @@ $this->params['breadcrumbs'][] = $this->title;
 
                     [
                             'attribute' => 'seat_row',
+                            'filter' => false,
                     ],
 
                     [
                             'attribute' => 'seat_column',
+                            'filter' => false,
                     ],
 
                     [
